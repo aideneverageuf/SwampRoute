@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <iomanip>
 #include "json.hpp"
+#include <math.h>
 
 using json = nlohmann::json;
 using namespace std;
