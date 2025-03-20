@@ -1,0 +1,3 @@
+C:/Users/aiden/vscode/Personal/SwampRoute/build/CMakeFiles/SwampRoute.dir
+C:/Users/aiden/vscode/Personal/SwampRoute/build/CMakeFiles/edit_cache.dir
+C:/Users/aiden/vscode/Personal/SwampRoute/build/CMakeFiles/rebuild_cache.dir
