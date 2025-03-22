@@ -1,0 +1,8 @@
+[
+{
+  "directory": "C:/Users/aiden/vscode/Personal/SwampRoute/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe  @CMakeFiles/SwampRoute.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\SwampRoute.dir\\src\\main.cpp.obj -c C:\\Users\\aiden\\vscode\\Personal\\SwampRoute\\backend\\src\\main.cpp",
+  "file": "C:/Users/aiden/vscode/Personal/SwampRoute/backend/src/main.cpp",
+  "output": "CMakeFiles/SwampRoute.dir/src/main.cpp.obj"
+}
+]

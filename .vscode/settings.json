@@ -3,5 +3,6 @@
         "iostream": "cpp",
         "ostream": "cpp",
         "iosfwd": "cpp"
-    }
+    },
+    "cmake.sourceDirectory": "C:/Users/aiden/vscode/Personal/SwampRoute/backend"
 }
