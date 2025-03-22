@@ -63,7 +63,4 @@ data = {
 with open("C:/Users/aiden/vscode/Personal/SwampRoute/backend/data/uf_campus.json", "w") as f:
     json.dump(data, f, indent=2)
 
-with open("C:/Users/aiden/vscode/Personal/SwampRoute/frontend/data/uf_campus.json", "w") as f:
-    json.dump(data, f, indent=2)
-
 print("Data saved to uf_campus.json")

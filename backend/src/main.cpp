@@ -140,7 +140,7 @@ string formatWalkingTime(double totalMinutes) {
 
 int main() {
     // Load the graph data from JSON
-    string filePath = "C:/Users/aiden/vscode/Personal/SwampRoute/data/uf_campus.json";
+    string filePath = "C:/Users/aiden/vscode/Personal/SwampRoute/backend/data/uf_campus.json";
     ifstream file(filePath);
     if (!file.is_open()) {
         cerr << "Error: Could not open JSON file at path: " << filePath << endl;
