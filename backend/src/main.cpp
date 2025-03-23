@@ -3,11 +3,15 @@
 #include <vector>
 #include <unordered_map>
 #include <queue>
+#include <sstream>
 #include <cmath>
 #include <algorithm>
 #include <iomanip>
 #include "json.hpp"
 #include <math.h>
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 using json = nlohmann::json;
 using namespace std;
@@ -36,7 +40,7 @@ double heuristic(const Node& a, const Node& b) {
 
 // A* algorithm implementation
 vector<int> aStar(const Graph& graph, const unordered_map<int, Node>& nodes, int start, int goal) {
-    priority_queue<pair<double, int>, vector<pair<double, int>>, greater<>> pq;
+    priority_queue<pair<double, int>, vector<pair<double, int>>, greater<pair<double, int>>> pq;
     unordered_map<int, double> costSoFar;
     unordered_map<int, int> cameFrom;
 
@@ -138,7 +142,7 @@ string formatWalkingTime(double totalMinutes) {
     return to_string(minutes) + " minutes " + to_string(seconds) + " seconds";
 }
 
-int main() {
+int main(int argc, char* argv[]) {
     // Load the graph data from JSON
     string filePath = "C:/Users/aiden/vscode/Personal/SwampRoute/backend/data/uf_campus.json";
     ifstream file(filePath);
@@ -182,11 +186,13 @@ int main() {
     }
 
     // Get user input for start and goal buildings
-    string startName, goalName;
-    cout << "Enter the name of the starting building: ";
-    getline(cin, startName);
-    cout << "Enter the name of the destination building: ";
-    getline(cin, goalName);
+    if (argc != 3) {
+        cerr << "Usage: main.exe <start> <end>" << endl;
+        return 1;
+    }
+
+    string startName = argv[1];
+    string goalName = argv[2];
 
     // Convert input to lowercase for case-insensitive comparison
     string startNameLower = toLowercase(startName);
@@ -208,81 +214,59 @@ int main() {
     // Run A* algorithm
     vector<int> path = aStar(graph, nodes, start, goal);
 
-    // Output the path with detailed directions
-    if (!path.empty()) {
-        cout << "Path from " << nodes[start].name << " to " << nodes[goal].name << ":" << endl;
-        double totalDistance = 0.0; // Total distance in meters
-        string lastDirection;
-        string lastRoadName;
+    // Calculate total distance and estimated walking time
+    double totalDistance = 0.0;
+    for (size_t i = 1; i < path.size(); ++i) {
+        const Node& curr = nodes.at(path[i]);
+        const Node& prev = nodes.at(path[i - 1]);
 
-        for (size_t i = 1; i < path.size(); ++i) {
-            int prevNode = path[i - 1];
-            int currNode = path[i];
-
-            // Find the road name and distance for the current edge
-            string roadName;
-            double distance = 0.0;
-            for (const auto& edge : graph[prevNode]) {
-                if (edge.to == currNode) {
-                    roadName = edge.roadName;
-                    distance = edge.weight;
-                    break;
-                }
-            }
-
-            // Add to total distance
-            totalDistance += distance;
-
-            // Get the direction for this segment
-            string direction;
-            if (i < path.size() - 1) {
-                int nextNode = path[i + 1];
-                direction = getDirection(nodes[prevNode], nodes[currNode], nodes[nextNode], roadName, distance);
-            } else {
-                direction = "Arrive at destination";
-            }
-
-            // Consolidate straight segments
-            if (direction.find("Continue straight") != string::npos) {
-                if (lastDirection.empty() || lastDirection.find("Continue straight") == string::npos || lastRoadName != roadName) {
-                    if (!lastDirection.empty()) {
-                        cout << "  " << lastDirection << endl;
-                    }
-                    lastDirection = direction;
-                } else {
-                    // Do nothing, continue accumulating
-                }
-            } else {
-                if (!lastDirection.empty()) {
-                    cout << "  " << lastDirection << endl;
-                }
-                cout << "  " << direction << endl;
-                lastDirection.clear();
-            }
-
-            lastRoadName = roadName;
-        }
-
-        // Output the last direction if it's a straight segment
-        if (!lastDirection.empty()) {
-            cout << "  " << lastDirection << endl;
-        }
-
-        // Calculate and display total distance and walking time
-        double totalDistanceMiles = totalDistance * 0.000621371;
-        double walkingTimeMinutes = (totalDistanceMiles / 3.1) * 60; // 3.1 mph walking speed
-
-        cout << "\nTotal Distance: ";
-        if (totalDistanceMiles < 0.1) {
-            int totalDistanceFeet = static_cast<int>(totalDistanceMiles * 5280);
-            cout << totalDistanceFeet << " feet";
-        } else {
-            cout << fixed << setprecision(2) << totalDistanceMiles << " miles";
-        }
-        cout << "\nEstimated Walking Time: " << formatWalkingTime(walkingTimeMinutes) << endl;
-    } else {
-        cerr << "Error: No path found." << endl;
+        // Calculate the distance between consecutive nodes (Euclidean distance)
+        double dist = graph.at(curr.id)[0].weight;  // This is the edge weight, distance between nodes
+        totalDistance += dist;
     }
+
+    // Convert total distance to miles
+    double totalDistanceMiles = totalDistance * 0.000621371;  // Convert meters to miles
+    totalDistanceMiles = round(totalDistanceMiles * 100.0) / 100.0;  // Round to hundredths place
+
+    // Estimate walking time (walking speed of 3 miles per hour)
+    double walkingSpeedMph = 3.0;  // miles per hour
+    double estimatedTimeHours = totalDistanceMiles / walkingSpeedMph;
+    double estimatedTimeMinutes = estimatedTimeHours * 60;
+    int minutes = static_cast<int>(estimatedTimeMinutes);
+    int seconds = static_cast<int>((estimatedTimeMinutes - minutes) * 60);
+
+    // Format total distance and estimated walking time
+    stringstream timeStream;
+    timeStream << minutes << " minutes " << seconds << " seconds";
+
+    // Build the response to include directions and coordinates
+    json response;
+    vector<json> coordinates;
+    vector<string> directions;
+
+    for (size_t i = 1; i < path.size() - 1; ++i) {
+        const Node& prev = nodes.at(path[i - 1]);
+        const Node& curr = nodes.at(path[i]);
+        const Node& next = nodes.at(path[i + 1]);
+
+        double distance = graph.at(curr.id)[0].weight;  // Distance to the next node
+        string roadName = graph.at(curr.id)[0].roadName;  // Road name
+        string direction = getDirection(prev, curr, next, roadName, distance);
+        directions.push_back(direction);
+
+        // Add coordinates
+        coordinates.push_back({{"latitude", curr.y}, {"longitude", curr.x}});
+    }
+
+    // Add total distance and estimated time to the response
+    response["coordinates"] = coordinates;
+    response["directions"] = directions;
+    response["total_distance"] = totalDistanceMiles;  // Add total distance in miles
+    response["estimated_time"] = timeStream.str();    // Add estimated walking time
+
+    // Send the response as JSON
+    cout << response.dump(4) << endl;
 
     return 0;
 }
