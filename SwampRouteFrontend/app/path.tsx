@@ -25,10 +25,10 @@ const PathScreen = () => {
         setLoading(true);
 
         const [coordinatesRes, directionsRes, totalDistanceRes, estimatedTimeRes] = await Promise.all([
-          fetch(`http://192.168.200.88:5000/path/coordinates?start=${start}&end=${end}`),
-          fetch(`http://192.168.200.88:5000/path/directions?start=${start}&end=${end}`),
-          fetch(`http://192.168.200.88:5000/path/total_distance?start=${start}&end=${end}`),
-          fetch(`http://192.168.200.88:5000/path/estimated_time?start=${start}&end=${end}`),
+          fetch(`http://10.136.31.164:5000/path/coordinates?start=${start}&end=${end}`),
+          fetch(`http://10.136.31.164:5000/path/directions?start=${start}&end=${end}`),
+          fetch(`http://10.136.31.164:5000/path/total_distance?start=${start}&end=${end}`),
+          fetch(`http://10.136.31.164:5000/path/estimated_time?start=${start}&end=${end}`),
         ]);
 
         const coordinatesData = await coordinatesRes.json();
